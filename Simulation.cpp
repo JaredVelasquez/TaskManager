@@ -13,6 +13,12 @@ Simulate::Simulate(QWidget *parent) :
     titles << "Name" << "Priority" << "Time Burst" << "Arrival Time" << "State" << "Waiting Time" << "Bloq#";
     ui->tableWidget->setColumnCount(7);
     ui->tableWidget->setHorizontalHeaderLabels(titles);
+    hilo1 = new QTimer(this);
+    hilo2 = new QTimer(this);
+    hilo1->setInterval(2000);
+
+    connect(hilo1, SIGNAL(timeout()), this, SLOT(PrintThread()));
+    connect(hilo2, SIGNAL(timeout()), this, SLOT(ThreadS()));
 }
 
 Simulate::~Simulate()
@@ -34,9 +40,17 @@ void Simulate::setProperties(int _cpu, int _quantum) {
     quantum = _quantum;
 }
 
+void Simulate::PrintThread() {
+    creatRow = false;
+    if(aux->data.cpu != 0){
+        aux->data.status = "Procesing";
+    }
+    PrintH(position, aux->data);
+}
 void Simulate::PrintH(int position, LinkedL Linkl) {
-    if(creatRow == true)
-        ui->tableWidget->insertRow(ui->tableWidget->rowCount());
+
+            ui->tableWidget->insertRow(ui->tableWidget->rowCount());
+
     ui->tableWidget->setItem(position,NAME, new QTableWidgetItem(Linkl.name));
     ui->tableWidget->setItem(position,PRIORITY, new QTableWidgetItem(QString::number(Linkl.priority)));
     ui->tableWidget->setItem(position,CPU, new QTableWidgetItem(QString::number(Linkl.cpu)));
@@ -51,6 +65,7 @@ void Simulate::showData() {
     Node *aux;
     aux = list;
     creatRow = true;
+    cont =1;
     while(aux != nullptr){
         PrintH(row, aux->data);
         aux = aux->next;
@@ -61,23 +76,20 @@ void Simulate::showData() {
 
 
 void Simulate::ThreadS() {
-    int realtime = 0, bloqlist = 0,totalcpu = cpu;
-    bool finish = false;
-    int position = 0, quantumaux=quantum;
-    Node *actual;
-    actual = list;
+    QThread thread;
+    int  bloqlist = 0,totalcpu = cpu;
+    int quantumaux=quantum;
 
-    do{
-        while(actual != NULL){
 
         if( actual->data.status != "Succes")
         {
                 actual->data.status = "Ready";
                 PrintH(position, actual->data);
-                while(quantum > 0 && actual->data.cpu > 0){
+                while(quantum > 0){
                     if (actual->data.cpu > 0){
                         actual->data.cpu -= 1;
                         quantum --;
+
                         PrintH(position, actual->data);
                     }
                 }
@@ -87,37 +99,41 @@ void Simulate::ThreadS() {
 
             if(actual->data.cpu <= 0){
                 actual->data.status = "Succes";
-                PrintH(position, actual->data);
             }
             else if(actual->data.cpu > 0){
                 actual->data.status = "Bloq";
                 if(actual->data.bloqnumber == 0){
                     actual->data.bloqnumber = bloqlist+1;
                     bloqlist += 1;
+
+                    PrintH(position, actual->data);
                 }
-                PrintH(position, actual->data);
             }
             actual->data.waiting_time = realtime - actual->data.time_arrived;
-            PrintH(position, actual->data);
-            actual = actual->next;
-        }
-            if(totalcpu <= 0){
-                finish = true;
-                actual = NULL;
-            }
-            position ++;
-        }
 
+            PrintH(position, actual->data);
+
+        }
+        actual = actual->next;
+            position ++;
 
         if(actual== NULL && totalcpu > 0){
             actual = list;
             position = 0;
         }
-    }while(finish != true);
+        if(totalcpu == 0){
+            showData();
+            hilo1->stop();
+            hilo2->stop();
+        }
+
 
 }
 
 void Simulate::on_START_clicked()
 {
-    ThreadS();
+    aux = list;
+    actual = list;
+    hilo1->start(2000);
+    hilo2->start(2000);
 }

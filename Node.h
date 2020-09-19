@@ -18,6 +18,7 @@ struct LinkedL {
     int waiting_time;
     int success_time;
     int bloqnumber;
+
 };
 
 struct Node {

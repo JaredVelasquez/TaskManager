@@ -14,6 +14,7 @@ SOURCES += \
     Simulation.cpp \
     main.cpp \
     simulateopc.cpp \
+    threadsimulation.cpp \
     widget.cpp
 
 HEADERS += \
@@ -21,6 +22,7 @@ HEADERS += \
     Node.h \
     Simulation.h \
     simulateopc.h \
+    threadsimulation.h \
     widget.h
 
 FORMS += \

@@ -5,8 +5,6 @@
 #include "Simulation.h"
 #include "simulateopc.h"
 
-LinkedL newProcess;
-
 Widget::Widget(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::Widget)
@@ -44,7 +42,7 @@ void Widget::on_simulation_clicked()
 {
     simulateForm *simuform = new simulateForm;
     simuform->setList(list);
-    simuform->setProperties(cpu, 4);
+    simuform->setProperties(cpu, 5);
     simuform->show();
 }
 
